@@ -2,17 +2,17 @@
 
 import React from "react";
 import Navbar from "./components/layout/Navbar";
+import Hero from "./components/hero/Hero";
+import Features from "./components/features/Features";
+import Dashboard from "./components/dashboard/Dashboard";
 
 const App: React.FC = () => {
   return (
     <>
       <Navbar />
-
-      {/* Temporary placeholder section — to be replaced by real content later */}
-      <section>
-        <h1>CodeLens AI</h1>
-        <p>AI-powered code analysis platform.</p>
-      </section>
+      <Hero />
+      <Features />
+      <Dashboard />
     </>
   );
 };

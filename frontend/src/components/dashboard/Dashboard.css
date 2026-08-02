@@ -1,0 +1,53 @@
+/* src/components/dashboard/Dashboard.css */
+
+.dashboard {
+  width: 100%;
+  background-color: #f8f9fa;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  padding: 4rem 3rem 6rem 3rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.dashboard__container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.dashboard__editor-section {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.dashboard__analysis-section {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ==========================================================
+   Responsive behavior
+   ========================================================== */
+@media (max-width: 992px) {
+  .dashboard {
+    padding: 3rem 2rem 4rem 2rem;
+  }
+
+  .dashboard__container {
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard {
+    padding: 2.5rem 1.25rem 3rem 1.25rem;
+  }
+
+  .dashboard__container {
+    gap: 2.5rem;
+  }
+}
