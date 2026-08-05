@@ -1,5 +1,5 @@
 // src/components/codeInput/CodeInput.tsx
-
+import LoadingOverlay from "./components/LoadingOverlay";
 import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
 import type { languages } from "monaco-editor";
@@ -537,6 +537,7 @@ const CodeInput: React.FC<CodeInputProps> = ({
   // Holds the currently selected language
   const [language, setLanguage] = useState<string>(initialLanguage);
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   // Derived counts — recalculated on every render from current code state
   const lineCount = code.length === 0 ? 0 : code.split("\n").length;
   const charCount = code.length;
@@ -564,7 +565,7 @@ const CodeInput: React.FC<CodeInputProps> = ({
         console.warn("CodeInput: no code provided to analyze.");
         return;
       }
-
+      setIsLoading(true);
       const response = await fetch("http://localhost:5000/analyze", {
         method: "POST",
         headers: {
@@ -585,6 +586,8 @@ const CodeInput: React.FC<CodeInputProps> = ({
         error instanceof Error ? error.message : "An unexpected error occurred.";
       console.error("CodeInput: failed to analyze code.", error);
       alert(message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -707,8 +710,8 @@ const CodeInput: React.FC<CodeInputProps> = ({
             placeholder,
           }}
         />
-      </div>
-
+        <LoadingOverlay isVisible={isLoading} />
+      </div>  
       {/* Information chips: lines, characters, language */}
       <div className="code-input__chips">
         <span className="code-input__chip">
@@ -731,12 +734,28 @@ const CodeInput: React.FC<CodeInputProps> = ({
 
       {/* Action buttons */}
       <div className="code-input__actions">
-        <button
-          type="button"
-          className="code-input__btn code-input__btn--primary"
-          onClick={handleAnalyzeClick}
-        >
-          Analyze Code
+      <button
+  type="button"
+  className={`code-input__btn code-input__btn--primary${
+    isLoading ? " code-input__btn--loading" : ""
+  }`}
+  onClick={handleAnalyzeClick}
+  disabled={isLoading}
+  aria-busy={isLoading}
+>
+  {isLoading ? (
+    <>
+      <span
+        className="material-symbols-outlined code-input__btn-spinner"
+        aria-hidden="true"
+      >
+        autorenew
+      </span>
+      Analyzing...
+    </>
+  ) : (
+            "Analyze Code"
+          )}
         </button>
 
         <button

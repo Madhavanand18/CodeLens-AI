@@ -1,0 +1,150 @@
+/* src/components/analysisPanel/components/CodeQuality.css */
+
+/*
+  Material Symbols requires the variable font loaded with the full axis range
+  so that font-variation-settings can control FILL at the element level.
+  The URL requests FILL 0..1 so both filled and outlined render correctly.
+*/
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=swap");
+
+/* ==========================================================
+   Card shell
+   ========================================================== */
+.code-quality {
+  background-color: #ffffff;
+  border: 1px solid #f1f3f4;
+  border-radius: 24px;
+  padding: 2.75rem;
+  box-shadow: 0 1px 3px rgba(32, 33, 36, 0.08);
+  transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+  font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.code-quality:hover {
+  border-color: #d2e3fc;
+  box-shadow: 0 16px 32px rgba(32, 33, 36, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================
+   Header row
+   ========================================================== */
+.code-quality__header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+/*
+  Base Material Symbols rendering rules, applied to every icon in this
+  component. font-variation-settings is overridden per-variant below.
+*/
+.code-quality__header-icon,
+.code-quality__star {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 1.6rem;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
+.code-quality__header-icon {
+  color: #4285f4;
+  /* FILL=0 → outlined "verified" badge icon */
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.code-quality__heading {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #202124;
+  margin: 0;
+}
+
+/* ==========================================================
+   Stars
+   ========================================================== */
+.code-quality__stars {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-bottom: 1rem;
+}
+
+/* Shared star color */
+.code-quality__star {
+  font-size: 1.75rem;
+  color: #fbbc05;
+}
+
+/* Filled star — FILL axis set to 1 */
+.code-quality__star--filled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* Half star — uses the "star_half" glyph; FILL=1 renders its left half */
+.code-quality__star--half {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* Empty / outlined star — FILL axis set to 0 */
+.code-quality__star--empty {
+  color: #dadce0;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* ==========================================================
+   Score row
+   ========================================================== */
+.code-quality__score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.code-quality__score {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #202124;
+  letter-spacing: -0.01em;
+}
+
+.code-quality__label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4285f4;
+}
+
+/* ==========================================================
+   Description
+   ========================================================== */
+.code-quality__description {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #5f6368;
+  margin: 0;
+}
+
+/* ==========================================================
+   Responsive
+   ========================================================== */
+@media (max-width: 600px) {
+  .code-quality {
+    padding: 1.5rem;
+    border-radius: 18px;
+  }
+
+  .code-quality__star {
+    font-size: 1.5rem;
+  }
+}

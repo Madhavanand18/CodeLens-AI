@@ -1,5 +1,4 @@
-// src/components/analysisPanel/AnalysisPanel.tsx
-
+import CodeQuality from "./components/CodeQuality";
 import React from "react";
 import "./AnalysisPanel.css";
 
@@ -134,6 +133,8 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis = null }) => {
           </div>
           {renderMiniCards(analysis.optimizations, "No improvements suggested")}
         </article>
+
+        <CodeQuality analysis={analysis} />
 
         <article className="analysis-panel__card">
           <div className="analysis-panel__card-header">
