@@ -1,0 +1,74 @@
+.download-analysis__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+  
+    height: 46px;
+    min-width: 190px;
+    padding: 0 1.35rem;
+  
+    border: 1.5px solid #dadce0;
+    border-radius: 24px;
+  
+    background-color: #ffffff;
+    color: #202124;
+  
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+  
+    cursor: pointer;
+  
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.15s ease,
+      box-shadow 0.2s ease;
+  }
+  
+  .download-analysis__btn:hover {
+    background-color: #f8f9fa;
+    border-color: #4285f4;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(66, 133, 244, 0.15);
+  }
+  
+  .download-analysis__btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+  
+  /* Material Symbols icon */
+  .download-analysis__btn::first-letter {
+    font-family: "Material Symbols Outlined";
+  }
+  
+  /* Downloaded state */
+  .download-analysis__btn--downloaded {
+    border-color: #34a853;
+    color: #188038;
+    background-color: #f1f8f4;
+  }
+  
+  /* Error state */
+  .download-analysis__btn--error {
+    border-color: #ea4335;
+    color: #c5221f;
+    background-color: #fce8e6;
+  }
+  
+  /* Disabled state */
+  .download-analysis__btn:disabled {
+    cursor: default;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Keep both buttons aligned on smaller screens */
+  @media (max-width: 600px) {
+    .download-analysis__btn {
+      width: 100%;
+      min-width: 0;
+    }
+  }

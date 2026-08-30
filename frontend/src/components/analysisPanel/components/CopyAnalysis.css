@@ -1,0 +1,84 @@
+/* src/components/analysisPanel/components/CopyAnalysis.css */
+
+.copy-analysis__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 24px;
+    border: 1.5px solid #dadce0;
+    background-color: #ffffff;
+    color: #202124;
+    font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease;
+  }
+  
+  .copy-analysis__btn:hover:not(:disabled) {
+    background-color: #f1f6ff;
+    border-color: #4285f4;
+    color: #4285f4;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
+  }
+  
+  /* Copied state — green confirmation */
+  .copy-analysis__btn--copied {
+    background-color: #e6f4ea;
+    border-color: #34a853;
+    color: #1e8e3e;
+    cursor: default;
+  }
+  
+  /* Error state — red feedback */
+  .copy-analysis__btn--error {
+    background-color: #fdf2f1;
+    border-color: #ea4335;
+    color: #c5221f;
+    cursor: default;
+  }
+  
+  .copy-analysis__icon {
+    font-family: "Material Symbols Outlined";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.1rem;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    direction: ltr;
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 20;
+  }
+  
+  .copy-analysis__btn--copied .copy-analysis__icon,
+  .copy-analysis__btn--error .copy-analysis__icon {
+    font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 20;
+  }
+  
+  .copy-analysis__label {
+    white-space: nowrap;
+  }
+  
+  @media (max-width: 480px) {
+    .copy-analysis__btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  .analysis-panel__analysis-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }

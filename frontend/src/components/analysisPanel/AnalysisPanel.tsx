@@ -1,4 +1,6 @@
 import CodeQuality from "./components/CodeQuality";
+import CopyAnalysis from "./components/CopyAnalysis";
+import DownloadAnalysis from "./components/DownloadAnalysis";
 import React from "react";
 import "./AnalysisPanel.css";
 
@@ -172,6 +174,10 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis = null }) => {
           </div>
           {renderMiniCards(analysis.testCases, "No test cases generated")}
         </article>
+        <div className="analysis-panel__analysis-actions">
+          <CopyAnalysis analysis={analysis} />
+          <DownloadAnalysis analysis={analysis} />
+        </div>
       </div>
     </section>
   );
