@@ -1,6 +1,7 @@
 import CodeQuality from "./components/CodeQuality";
 import CopyAnalysis from "./components/CopyAnalysis";
 import DownloadAnalysis from "./components/DownloadAnalysis";
+import FixCode from "./components/FixCode";
 import React from "react";
 import "./AnalysisPanel.css";
 
@@ -25,6 +26,9 @@ const SECTION_ICONS: Record<string, string> = {
 // Props allow this component to be reused with custom analysis data
 interface AnalysisPanelProps {
   /** Analysis result from the backend; null/undefined shows the empty state */
+  code: string;
+language: string;
+onApplyCode?: (improvedCode: string) => void;
   analysis?: AnalysisResult | null;
 }
 
@@ -77,7 +81,12 @@ const parseComplexity = (complexity: string): { time: string; space: string } =>
  * Shows a clean empty state until real analysis data is available;
  * no placeholder or demo values are ever displayed.
  */
-const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis = null }) => {
+const AnalysisPanel: React.FC<AnalysisPanelProps> = ({
+  analysis = null,
+  code = "",
+  language = "",
+  onApplyCode,
+}) => {
   // No analysis yet — show a clean empty state, no placeholder/demo data
   if (analysis === null) {
     return (
@@ -175,8 +184,16 @@ const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ analysis = null }) => {
           {renderMiniCards(analysis.testCases, "No test cases generated")}
         </article>
         <div className="analysis-panel__analysis-actions">
-          <CopyAnalysis analysis={analysis} />
-          <DownloadAnalysis analysis={analysis} />
+        <CopyAnalysis analysis={analysis} />
+<DownloadAnalysis analysis={analysis} />
+
+<FixCode
+  code={code}
+  language={language}
+  analysis={analysis}
+  onApplyCode={onApplyCode}
+/>
+          
         </div>
       </div>
     </section>

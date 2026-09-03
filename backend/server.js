@@ -5,6 +5,8 @@ const cors = require("cors");
 
 const app = express();
 
+const { executeCode } = require("./services/codeExecutionService");
+
 const PORT = 5000;
 
 // Verify that the required environment variable is present before continuing
@@ -182,6 +184,226 @@ app.post("/analyze", async (req, res) => {
     } catch (error) {
         // Catch-all for unexpected runtime errors
         console.error("POST /analyze error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An unexpected error occurred while processing the request.",
+        });
+    }
+});
+
+/**
+ * Builds the prompt sent to the AI model for the /fix endpoint.
+ * Instructs the model to return ONLY improved source code — no markdown,
+ * no fences, no explanations.
+ */
+function buildFixPrompt(code, language, analysis) {
+    const bugList =
+        analysis.bugs?.length > 0
+            ? analysis.bugs.map((b) => `  - ${b}`).join("\n")
+            : "  None identified.";
+
+    const optimizationList =
+        analysis.optimizations?.length > 0
+            ? analysis.optimizations.map((o) => `  - ${o}`).join("\n")
+            : "  None suggested.";
+
+    return `You are a senior software engineer performing a professional code improvement task.
+
+You are given the following ${language} code along with an existing analysis report.
+
+Your task:
+- Fix every identified bug listed below.
+- Apply every optimization suggestion listed below where practical.
+- Preserve the original intended behavior of the code exactly.
+- Improve code readability and naming where appropriate.
+- Do NOT add unrelated features or change program behavior.
+- Return ONLY the improved ${language} source code.
+- Never return markdown code fences (\`\`\`).
+- Never return explanations, comments about what changed, or any text other than the code itself.
+
+Identified bugs:
+${bugList}
+
+Suggested optimizations:
+${optimizationList}
+
+Original code:
+${code}
+`;
+}
+
+/**
+ * POST /fix
+ * Accepts original code, language, and the existing analysis object.
+ * Returns AI-improved source code based on the analysis findings.
+ */
+app.post("/fix", async (req, res) => {
+    try {
+        const { code, language, analysis } = req.body;
+
+        if (
+            !code ||
+            typeof code !== "string" ||
+            code.trim() === "" ||
+            !language ||
+            typeof language !== "string" ||
+            language.trim() === "" ||
+            !analysis ||
+            typeof analysis !== "object"
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "code, language and analysis are required.",
+            });
+        }
+
+        if (!process.env.OPENROUTER_API_KEY) {
+            return res.status(500).json({
+                success: false,
+                message: "Server is missing required API configuration.",
+            });
+        }
+
+        const openRouterResponse = await fetch(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: "deepseek/deepseek-chat-v3.1",
+                    messages: [
+                        {
+                            role: "user",
+                            content: buildFixPrompt(code, language, analysis),
+                        },
+                    ],
+                }),
+            }
+        );
+
+        if (!openRouterResponse.ok) {
+            console.error(
+                "OpenRouter /fix error:",
+                openRouterResponse.status,
+                await openRouterResponse.text()
+            );
+            return res.status(500).json({
+                success: false,
+                message: "Failed to reach the AI improvement service.",
+            });
+        }
+
+        const openRouterData = await openRouterResponse.json();
+        const rawContent = openRouterData?.choices?.[0]?.message?.content;
+
+        if (!rawContent) {
+            return res.status(500).json({
+                success: false,
+                message: "AI service returned an empty response.",
+            });
+        }
+
+        // Strip any accidental markdown fences the model may have added
+        const improvedCode = rawContent
+            .trim()
+            .replace(/^```[\w]*\n?/i, "")
+            .replace(/```$/,  "")
+            .trim();
+
+        return res.status(200).json({
+            success: true,
+            code: improvedCode,
+        });
+    } catch (error) {
+        console.error("POST /fix error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An unexpected error occurred while processing the request.",
+        });
+    }
+});
+
+/**
+ * Supported languages for the Run Code feature.
+ * This list is used for validation before code execution.
+ */
+const SUPPORTED_RUN_LANGUAGES = [
+    "java",
+    "python",
+    "javascript",
+    "typescript",
+    "c",
+    "cpp",
+    "csharp",
+    "go",
+    "rust",
+];
+
+/**
+ * POST /run
+ * Accepts source code, language, and optional stdin input.
+ * Validates the request and prepares for future code execution.
+ * Actual execution will be handled by a sandbox service in a future phase.
+ */
+app.post("/run", async (req, res) => {
+    try {
+        const { code, language, input } = req.body;
+
+        if (!code || typeof code !== "string" || code.trim() === "") {
+            return res.status(400).json({
+                success: false,
+                message: "Code is required and must be a non-empty string.",
+            });
+        }
+
+        if (!language || typeof language !== "string" || language.trim() === "") {
+            return res.status(400).json({
+                success: false,
+                message: "Language is required and must be a non-empty string.",
+            });
+        }
+
+        const normalizedLanguage = language.toLowerCase().trim();
+
+        if (!SUPPORTED_RUN_LANGUAGES.includes(normalizedLanguage)) {
+            return res.status(400).json({
+                success: false,
+                message: `Unsupported language. Supported languages: ${SUPPORTED_RUN_LANGUAGES.join(", ")}.`,
+            });
+        }
+
+        if (input !== undefined && typeof input !== "string") {
+            return res.status(400).json({
+                success: false,
+                message: "Input must be a string when provided.",
+            });
+        }
+
+        const normalizedInput = input || "";
+
+        try {
+            const executionResult = await executeCode(
+                code,
+                normalizedLanguage,
+                normalizedInput
+            );
+
+            return res.status(200).json({
+                success: true,
+                ...executionResult,
+            });
+        } catch (executionError) {
+            console.error("Execution service error:", executionError);
+            return res.status(500).json({
+                success: false,
+                message: executionError.message || "Failed to execute code.",
+            });
+        }
+    } catch (error) {
+        console.error("POST /run error:", error);
         return res.status(500).json({
             success: false,
             message: "An unexpected error occurred while processing the request.",

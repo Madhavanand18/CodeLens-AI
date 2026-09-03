@@ -1,7 +1,7 @@
-// src/components/codeInput/CodeInput.tsx
 import LoadingOverlay from "./components/LoadingOverlay";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
+import RunCode from "../runCode/RunCode";
 import type { languages } from "monaco-editor";
 import "./CodeInput.css";
 
@@ -20,6 +20,19 @@ const LANGUAGES: string[] = [
 
 // Maps display language labels to Monaco's language identifiers
 const MONACO_LANGUAGE_MAP: Record<string, string> = {
+  Java: "java",
+  Python: "python",
+  JavaScript: "javascript",
+  TypeScript: "typescript",
+  C: "c",
+  "C++": "cpp",
+  "C#": "csharp",
+  Go: "go",
+  Rust: "rust",
+};
+
+// Maps display language labels to backend language identifiers
+const BACKEND_LANGUAGE_MAP: Record<string, string> = {
   Java: "java",
   Python: "python",
   JavaScript: "javascript",
@@ -57,6 +70,7 @@ interface AnalysisResult {
 // Props allow this component to be reused and customized across the app
 interface CodeInputProps {
   /** Initial code to populate the editor with */
+  onBeforeAnalyze?: (code: string, language: string) => void;
   initialCode?: string;
   /** Initial selected language */
   initialLanguage?: string;
@@ -525,6 +539,7 @@ const handleEditorWillMount = (monacoInstance: typeof import("monaco-editor")) =
  */
 const CodeInput: React.FC<CodeInputProps> = ({
   initialCode = "",
+  onBeforeAnalyze,
   initialLanguage = LANGUAGES[0],
   placeholder = "Paste your code here...",
   onAnalysisComplete,
@@ -533,11 +548,83 @@ const CodeInput: React.FC<CodeInputProps> = ({
 }) => {
   // Holds the code typed/pasted by the user
   const [code, setCode] = useState<string>(initialCode);
+  useEffect(() => {
+    setCode(initialCode);
+  }, [initialCode]);
 
   // Holds the currently selected language
   const [language, setLanguage] = useState<string>(initialLanguage);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [runInput, setRunInput] = useState<string>("");
+  const [runOutput, setRunOutput] = useState<string>("");
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [executionTime, setExecutionTime] = useState<number | null>(null);
+
+  const handleRun = async (): Promise<void> => {
+    if (!code.trim()) {
+      console.warn("CodeInput: no code provided to run.");
+      return;
+    }
+
+    setIsRunning(true);
+    setRunOutput("");
+    setExecutionTime(null);
+
+    try {
+      const backendLanguage = BACKEND_LANGUAGE_MAP[language] ?? "python";
+
+      const response = await fetch("http://localhost:5000/run", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code,
+          language: backendLanguage,
+          input: runInput,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to run code.");
+      }
+
+      let displayOutput = "";
+
+      if (data.output) {
+        displayOutput += data.output;
+      }
+
+      if (data.error) {
+        if (displayOutput) {
+          displayOutput += "\n";
+        }
+        displayOutput += data.error;
+      }
+
+      if (data.executionTime !== null && data.executionTime !== undefined) {
+        setExecutionTime(data.executionTime);
+        if (displayOutput) {
+          displayOutput += "\n";
+        }
+        displayOutput += `\nExecution time: ${data.executionTime} ms`;
+      }
+
+      setRunOutput(displayOutput || "Program executed with no output.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "An unexpected error occurred.";
+      console.error("CodeInput: failed to run code.", error);
+      setRunOutput(`Error: ${message}`);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   // Derived counts — recalculated on every render from current code state
   const lineCount = code.length === 0 ? 0 : code.split("\n").length;
   const charCount = code.length;
@@ -559,12 +646,14 @@ const CodeInput: React.FC<CodeInputProps> = ({
   };
 
   // Handles the "Analyze Code" button click — sends code to the backend for analysis
-  const handleAnalyzeClick = async (): Promise<void> => {
+  const handleAnalyzeClick = async (): Promise<void> => 
+    {
     try {
       if (!code.trim()) {
         console.warn("CodeInput: no code provided to analyze.");
         return;
       }
+      onBeforeAnalyze?.(code, language);
       setIsLoading(true);
       const response = await fetch("http://localhost:5000/analyze", {
         method: "POST",
@@ -774,6 +863,15 @@ const CodeInput: React.FC<CodeInputProps> = ({
           Paste from Clipboard
         </button>
       </div>
+
+      {/* Run Code panel */}
+      <RunCode
+        onRun={handleRun}
+        isRunning={isRunning}
+        input={runInput}
+        onInputChange={setRunInput}
+        output={runOutput}
+      />
     </div>
   );
 };
